@@ -36,11 +36,11 @@ export class LoginComponent {
           localStorage.removeItem('email');
         }
         console.log('Usuario logeado');
+        this.router.navigateByUrl('/');
       },
       (err) => {
         Swal.fire('Error', err.error.msg, 'error');
       }
     );
-    this.router.navigateByUrl('/');
   }
 }

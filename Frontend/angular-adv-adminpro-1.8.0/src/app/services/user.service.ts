@@ -18,13 +18,18 @@ export class UserService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  validarToken(): Observable<boolean> {
-    const token = localStorage.getItem('token') || '';
+  get token(): string {
+    return localStorage.getItem('token') || '';
+  }
+  get uid(): string {
+    return this.user.uid || '';
+  }
 
+  validarToken(): Observable<boolean> {
     return this.http
       .get(`${baseURL}/login/renew`, {
         headers: {
-          'x-token': token,
+          'x-token': this.token,
         },
       })
       .pipe(
@@ -46,6 +51,19 @@ export class UserService {
       })
     );
   }
+
+  updateUser(data: { email: string; name: string; role: string }) {
+    data = {
+      ...data,
+      role: this.user.role,
+    };
+    return this.http.put(`${baseURL}/usuarios/${this.uid}`, data, {
+      headers: {
+        'x-token': this.token,
+      },
+    });
+  }
+
   login(formData: LoginForm) {
     return this.http.post(`${baseURL}/login`, formData).pipe(
       tap((resp: any) => {
