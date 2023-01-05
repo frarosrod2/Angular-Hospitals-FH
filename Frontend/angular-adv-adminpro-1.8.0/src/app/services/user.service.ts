@@ -2,6 +2,7 @@ import { LoginForm } from './../interfaces/login-form.interface';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RegisterForm } from '../interfaces/register-form.interface';
+import { LoadUserResponse } from '../interfaces/load-users.interface';
 import { environment } from 'src/environments/environment';
 import { catchError, map, tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
@@ -25,23 +26,25 @@ export class UserService {
     return this.user.uid || '';
   }
 
+  get headers() {
+    return {
+      headers: {
+        'x-token': this.token,
+      },
+    };
+  }
+
   validarToken(): Observable<boolean> {
-    return this.http
-      .get(`${baseURL}/login/renew`, {
-        headers: {
-          'x-token': this.token,
-        },
-      })
-      .pipe(
-        map((resp: any) => {
-          console.log(resp);
-          const { email, google, nombre, role, uid, img = '' } = resp.usuario;
-          this.user = new User(email, nombre, '', google, img, role, uid);
-          localStorage.setItem('token', resp.token);
-          return true;
-        }),
-        catchError((error) => of(false))
-      );
+    return this.http.get(`${baseURL}/login/renew`, this.headers).pipe(
+      map((resp: any) => {
+        console.log(resp);
+        const { email, google, nombre, role, uid, img = '' } = resp.usuario;
+        this.user = new User(email, nombre, '', google, img, role, uid);
+        localStorage.setItem('token', resp.token);
+        return true;
+      }),
+      catchError((error) => of(false))
+    );
   }
 
   createUser(formData: RegisterForm) {
@@ -76,5 +79,25 @@ export class UserService {
     localStorage.removeItem('token');
 
     this.router.navigateByUrl('/login');
+  }
+  loadUsers(desde: number = 0) {
+    const url = `${baseURL}/usuarios?desde=${desde}`;
+    return this.http.get<LoadUserResponse>(url, this.headers).pipe(
+      map((resp) => {
+        const users = resp.usuarios.map(
+          (user: any) =>
+            new User(
+              user.email,
+              user.nombre,
+              '',
+              user.img,
+              user.google,
+              user.role,
+              user.uid
+            )
+        );
+        return { total: resp.total, usuarios: users };
+      })
+    );
   }
 }
