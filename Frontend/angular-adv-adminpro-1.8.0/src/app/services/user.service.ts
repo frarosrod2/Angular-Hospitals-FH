@@ -100,4 +100,17 @@ export class UserService {
       })
     );
   }
+
+  deleteUser(user: User) {
+    return this.http.delete(`${baseURL}/usuarios/${user.uid}`, this.headers);
+  }
+
+  saveUser(user: User) {
+    console.log('user', user);
+    return this.http.put(
+      `${baseURL}/usuarios/${user.uid}`,
+      { nombre: user.name, ...user },
+      this.headers
+    );
+  }
 }
