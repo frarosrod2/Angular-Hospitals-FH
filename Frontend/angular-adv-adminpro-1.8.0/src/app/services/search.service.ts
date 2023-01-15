@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment.prod';
 import { map } from 'rxjs/operators';
 import { User } from '../models/user.model';
+import { Hospital } from '../models/hospital.model';
 
 const baseURL = environment.baseURL;
 
@@ -39,6 +40,10 @@ export class SearchService {
     );
   }
 
+  private transformHospitals(res: any): Hospital[] {
+    return res;
+  }
+
   search(type: 'usuarios' | 'medicos' | 'hospitales', term = '') {
     const url = `${baseURL}/todo/coleccion/${type}/${term}`;
     return this.http.get<any[]>(url, this.headers).pipe(
@@ -46,10 +51,8 @@ export class SearchService {
         switch (type) {
           case 'usuarios':
             return this.transformUsers(resp.resultados);
-          case 'usuarios':
-            break;
-          case 'usuarios':
-            break;
+          case 'hospitales':
+            return this.transformHospitals(resp.resultados);
           default:
             return [];
         }
